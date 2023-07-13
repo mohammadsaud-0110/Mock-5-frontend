@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Signup</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+        #cont{
+            width: 100%;
+            height: 100vh;
+            background-color: teal;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #form-div{
+            width: 300px;
+            padding: 20px;
+            /* border: 2px solid rgb(214, 31, 31); */
+            border-radius: 10px;
+            box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+            background-color: white;
+        }
+        form{
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 20px 0px;
+        }
+        form *{
+            font-size: 18px;
+            padding: 5px 10px;
+        }
+        button{
+            padding: 8px 16px;
+            width: 100px;
+            font-size: 16px;
+            color: white;
+            background-color: rgb(119, 0, 255);
+            border-radius: 10px;
+            border: 0px;
+        }
+    </style>
+</head>
+<body>
+    <div id="cont">
+        <div id="form-div">
+
+            <button id="loginbtn">Login</button>
+            <button id="signupbtn">Sign Up</button>
+
+            <form id="login-form">
+                <input id="loginEmail" type="text" placeholder="Enter Email" required>
+                <input id="loginPassword" type="password" placeholder="Enter Password" required>
+                <input type="submit" value="Login">
+            </form>
+
+            <form id="signup-form">
+                <input id="signupEmail" type="text" placeholder="Enter Email" required>
+                <input id="signupPassword" type="password" placeholder="Enter Password" required>
+                <input id="signupConfirmPassword" type="password" placeholder="Confirm Password" required>
+                <input type="submit" value="Sign Up">
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    const URL = 'https://mock-5-server-n0c6.onrender.com';
+
+    let loginform = document.querySelector("#login-form");
+    let signupform = document.querySelector("#signup-form");
+
+    signupform.style.display = "none";
+
+    let loginbtn = document.querySelector("#loginbtn");
+    let signupbtn = document.querySelector("#signupbtn");
+
+    loginbtn.addEventListener("click", (e)=>{
+        e.preventDefault();
+        loginform.style.display = "flex";
+        signupform.style.display = "none";
+    })
+
+    signupbtn.addEventListener("click", (e)=>{
+        e.preventDefault();
+        loginform.style.display = "none";
+        signupform.style.display = "flex";
+    })
+
+    //------login-------
+    loginform.addEventListener("submit",async (e)=>{
+        e.preventDefault();
+
+        await fetch(`${URL}/user/login`, {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                email : loginform.loginEmail.value,
+                password: loginform.loginPassword.value
+            }),
+        })
+        .then((res) => {
+            return res.json();
+        })
+        .then((data)=>{
+            if(data.msg == 'Wrong Password'){
+                alert('Wrong Password');
+            }
+            else if(data.msg == 'Email not registered'){
+                alert('User Not Found')
+            }
+            else{
+                localStorage.setItem("accessToken", data.accessToken)
+                alert(data.msg);
+                window.location.href = "./employee.html";
+            }
+        })
+        .catch((err)=>alert(err.message))
+    })
+
+
+    //-----sign up -----
+    signupform.addEventListener("submit",async (e)=>{
+        e.preventDefault();
+
+        if(signupform.signupPassword.value == signupform.signupConfirmPassword.value){
+            await fetch(`${URL}/user/signup`, {
+                method: "POST",
+                headers: {
+                "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email : signupform.signupEmail.value,
+                    password: signupform.signupPassword.value
+                }),
+            })
+            .then((res) => {
+                return res.json();
+            })
+            .then((data)=>{
+                // console.log(data);
+                if(data.msg == 'Email already present!'){
+                    alert('Email already present!');
+                }
+                else{
+                    alert(data.msg);
+                    loginform.style.display = "flex";
+                    signupform.style.display = "none";
+                }
+            })
+            .catch((err)=>alert(err.message))
+        }
+        else{
+            alert("Confirm Password is does not match");
+        }
+    })
+
+</script>
